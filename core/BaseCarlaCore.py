@@ -59,7 +59,6 @@ class BaseCarlaCore:
             self.experiment_config["Weather"],
         )
         self.set_map_dimensions()
-        self.hero = None
         self.camera_manager = None
         self.collision_manager = None
 
@@ -172,25 +171,6 @@ class BaseCarlaCore:
         # if (i + 1) == num_retries:
         raise Exception("Trouble is brewing. Can not connect to server. Try increasing timeouts or num_retries")
 
-    # ==============================================================================
-    # -- ClientSetup -----------------------------------------------------------
-    # ==============================================================================
-
-    def apply_server_view(self, server_view_x, server_view_y, server_view_z, server_view_pitch):
-        """
-        :param server_view_x: X location of server camera
-        :param server_view_y: Y location of server camera
-        :param server_view_z: Z location of server camera
-        :param server_view_pitch: Pitch of server camera
-        :return: None
-        """
-        self.spectator = self.world.get_spectator()
-        self.spectator.set_transform(
-            carla.Transform(
-                carla.Location(x=server_view_x, y=server_view_y, z=server_view_z),
-                carla.Rotation(pitch=server_view_pitch),
-            )
-        )
 
     # ==============================================================================
     # -- MapDigestionsSetup -----------------------------------------------------------
@@ -313,8 +293,8 @@ class BaseCarlaCore:
     def update_camera(self):
         self.camera_manager.read_image_queue()
 
-    def get_camera_data(self, normalized=True):
-        return self.camera_manager.get_camera_data(normalized)
+    def get_camera_data(self):
+        return self.camera_manager.get_camera_data()
 
     # ==============================================================================
     # -- CollisionSensor -----------------------------------------------------------
@@ -326,38 +306,6 @@ class BaseCarlaCore:
     def get_collision_data(self):
         return self.collision_manager.get_collision_data()
 
-    # ==============================================================================
-    # -- Hero -----------------------------------------------------------
-    # ==============================================================================
-    def spawn_hero(self, transform, vehicle_blueprint, world, autopilot=False):
-        """
-        This function spawns the hero vehicle. It makes sure that if a hero exists=>destroy the hero and respawn
-
-        :param transform: Hero location
-        :param vehicle_blueprint: Hero vehicle blueprint
-        :param world: World
-        :param autopilot: Autopilot Status
-        :return:
-        """
-        if self.hero is not None:
-            self.hero.destroy()
-            self.hero = None
-
-        hero_car_blueprint = world.get_blueprint_library().find(vehicle_blueprint)
-        hero_car_blueprint.set_attribute("role_name", "hero")
-
-        while self.hero is None:
-            self.hero = world.try_spawn_actor(hero_car_blueprint, transform)
-
-        self.hero.set_autopilot(autopilot)
-
-    def get_hero(self):
-
-        """
-        Get hero vehicle
-        :return:
-        """
-        return self.hero
 
     # ==============================================================================
     # -- OtherForNow -----------------------------------------------------------

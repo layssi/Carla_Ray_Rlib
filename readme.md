@@ -1,6 +1,9 @@
 # Carla-Ray-RLib
 Reinforcement Learning with Rlib and Carla
 
+![Cloud Based Autonomous Driving RL](/home/salstouhi/Desktop/Carla_Ray_Rlib/docs/thumbnail_CARLA_RAY.jpg  "Cloud Based Autonomous Driving RL")
+
+
 # Setup Carla
 ## Download Carla Binaries
 ### (Option 1) Release 0.9.6:

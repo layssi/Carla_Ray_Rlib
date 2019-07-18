@@ -169,15 +169,12 @@ class CameraManager(object):
                 # Ignore empty Que
                 pass
 
-    def get_camera_data(self, normalized=True):
+    def get_camera_data(self):
 
         if self.camera_data is None:
             return None
 
-        if normalized:
-            return (self.camera_data.astype(np.float32) - 128) / 128
-        else:
-            return self.camera_data.astype(np.float32)
+        return self.camera_data.astype(np.float32)
 
     @staticmethod
     def _parse_image(weak_self, image):

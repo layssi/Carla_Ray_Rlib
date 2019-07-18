@@ -2,7 +2,8 @@ import os
 import random
 import time
 import sys
-
+import cv2
+import numpy as np
 
 def add_carla_path(carla_path_config_file):
     carla_text_path = (os.path.dirname(os.path.realpath(__file__)) + "/" + carla_path_config_file)
@@ -20,6 +21,23 @@ def add_carla_path(carla_path_config_file):
 
 def get_parent_dir(directory):
     return os.path.dirname(directory)
+
+
+def post_process_image(image, normalized=True, grayscale=True):
+    """
+    Convert image to gray scale and normalize between -1 and 1 if required
+    :param image:
+    :param normalized:
+    :return: normalized image
+    """
+    if grayscale:
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+
+    if normalized:
+        return (image.astype(np.float32) - 128) / 128
+    else:
+        return image.astype(np.float32)
+
 
 
 def spawn_vehicle_at(transform, vehicle_blueprint, world, autopilot=True, max_time=0.1):

@@ -5,6 +5,7 @@ import numpy as np
 from gym.spaces import Box
 
 from experiments.base_experiment import BaseExperiment
+import carla
 
 OBSERVATION_CONFIG = {
     "CAMERA_OBSERVATION": True,
@@ -24,24 +25,13 @@ class Experiment(BaseExperiment):
         self.experiment_config.update(EXPERIMENT_CONFIG)
         self.experiment_config.update(OBSERVATION_CONFIG)
 
+
     def set_observation_space(self):
         """
         Set observation space as location of vehicle im x,y starting at (0,0) and ending at (1,1)
         :return:
         """
         self.observation_space = Box(low=0.0, high=1.0, shape=(2,), dtype=np.float32)
-
-    def post_process_observation(self, core, observation):
-        """
-        Post processing of raw CARLA observations
-        :param core: Core Environment
-        :param observation: CARLA observations
-        :return:
-        """
-        post_observation = np.r_[core.normalize_coordinates(
-            observation["location"].location.x,
-            observation["location"].location.y)]
-        return post_observation
 
     def initialize_reward(self, core):
         """
@@ -55,10 +45,11 @@ class Experiment(BaseExperiment):
             self.start_location.location.y)
         self.previous_distance = None
 
-    def compute_reward(self, observation):
+    def compute_reward(self, core, observation):
         """
         Reward function
         :return:
+        :param core:
         :param observation:
         :return:
         """
@@ -82,3 +73,48 @@ class Experiment(BaseExperiment):
         self.previous_distance = distance_reward
 
         return reward
+
+    def process_observation(self, core, observation):
+        """
+        Post processing of raw CARLA observations
+        :param core: Core Environment
+        :param observation: CARLA observations
+        :return:
+        """
+        self.set_server_view(core)
+
+        post_observation = np.r_[core.normalize_coordinates(
+            observation["location"].location.x,
+            observation["location"].location.y)]
+        return post_observation
+
+
+
+    # def set_server_view(self, core):
+    #
+    #     """
+    #     Apply server view to be in the sky between camera between start and end positions
+    #     :param core:
+    #     :return:
+    #     """
+    #     # spectator pointing to the sky to reduce rendering impact
+    #
+    #     server_view_x = (
+    #             self.experiment_config["Server_View"]["server_view_x_offset"]
+    #             + (self.start_location.location.x + self.end_location.location.x) / 2
+    #     )
+    #     server_view_y = (
+    #             self.experiment_config["Server_View"]["server_view_y_offset"]
+    #             + (self.start_location.location.y + self.end_location.location.y) / 2
+    #     )
+    #     server_view_z = self.experiment_config["Server_View"]["server_view_height"]
+    #     server_view_pitch = self.experiment_config["Server_View"]["server_view_pitch"]
+    #
+    #     world = core.get_core_world()
+    #     self.spectator = world.get_spectator()
+    #     self.spectator.set_transform(
+    #         carla.Transform(
+    #             carla.Location(x=server_view_x, y=server_view_y, z=server_view_z),
+    #             carla.Rotation(pitch=server_view_pitch),
+    #         )
+    #     )

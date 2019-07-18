@@ -12,8 +12,8 @@ from gym.utils import seeding
 from helper.CarlaHelper import add_carla_path
 
 ENV_CONFIG = {
-    "RAY": False,  # True if you are  running an experiment in Ray
-    "DEBUG_MODE": True,
+    "RAY": True,  # True if you are  running an experiment in Ray
+    "DEBUG_MODE": False,
     "CARLA_PATH_CONFIG_FILE": "CARLA_PATH.txt",  # IN this file, put the path to your CARLA FOLDER
 }
 
@@ -23,7 +23,7 @@ ENV_CONFIG.update({"SERVER_BINARY": CARLA_SERVER_BINARY})
 import carla
 
 #Choose your expreimet and Core
-from experiments.experiment1 import Experiment
+from experiments.experiment2 import Experiment
 from core.CarlaCore1 import CarlaCore
 
 from helper.CarlaDebug import draw_spawn_points, get_actor_display_name, \
@@ -48,38 +48,30 @@ class CarlaEnv(gym.Env):
         self.core = CarlaCore(self.environment_config, self.experiment_config)
         self.experiment.spawn_actors(self.core)
         self.experiment.initialize_reward(self.core)
-        self.core.apply_server_view(*self.experiment.get_server_view())
         self.reset()
 
     def reset(self):
         self.core.reset_sensors(self.experiment_config)
-
-        self.core.spawn_hero(
-            self.experiment.start_location,
-            self.experiment_config["hero_vehicle_model"],
-            self.core.get_core_world(),
-            autopilot=True,
-        )
-        self.hero = self.core.get_hero()
+        self.experiment.spawn_hero(self.core, self.experiment.start_location, autopilot=True)
 
         self.core.setup_sensors(
             self.experiment.experiment_config,
-            self.hero,
+            self.experiment.get_hero(),
             self.core.get_core_world().get_settings().synchronous_mode,
         )
         self.experiment.initialize_reward(self.core)
-
+        self.experiment.set_server_view(self.core)
         self.experiment.experiment_tick(self.core, action=None)
         obs, info = self.experiment.get_observation(self.core)
-        obs = self.experiment.post_process_observation(self.core, obs)
+        obs = self.experiment.process_observation(self.core, obs)
         return obs
 
     def step(self, action):
         # assert action in [0, 13], action
         self.experiment.experiment_tick(self.core, action)
         observation, info = self.experiment.get_observation(self.core)
-        observation = self.experiment.post_process_observation(self.core, observation)
-        reward = self.experiment.compute_reward(observation)
+        observation = self.experiment.process_observation(self.core, observation)
+        reward = self.experiment.compute_reward(self.core,observation)
         done = self.experiment.get_done_status()
         return observation, reward, done, info
 
@@ -99,7 +91,7 @@ if __name__ == "__main__":
             dir(carla.LaneInvasionEvent.crossed_lane_markings)
 
             world = env.core.get_core_world()
-            hero = env.hero
+            hero = env.experiment.hero
 
             draw_spawn_points(world)
             print_spawn_point(world)

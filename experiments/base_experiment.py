@@ -6,7 +6,7 @@ import carla
 import numpy as np
 from gym.spaces import Discrete, Box
 
-from helper.CarlaHelper import spawn_vehicle_at
+from helper.CarlaHelper import spawn_vehicle_at, post_process_image
 
 
 class SensorsTransformEnum(Enum):
@@ -36,10 +36,11 @@ SERVER_VIEW_CONFIG = {
 SENSOR_CONFIG = {
     "SENSOR": SensorsEnum.CAMERA_RGB,
     "SENSOR_TRANSFORM": SensorsTransformEnum.Transform_A,
-    "CAMERA_X": 1280,
-    "CAMERA_Y": 720,
+    "CAMERA_X": 84,#1280,
+    "CAMERA_Y": 84,#720,
     "CAMERA_FOV": 60,
     "CAMERA_NORMALIZED": True,
+    "CAMERA_GRAYSCALE": True,
     "FRAMESTACK": 1,
 }
 OBSERVATION_CONFIG = {
@@ -86,7 +87,20 @@ DISCRETE_ACTIONS = DISCRETE_ACTIONS_SMALL
 
 class BaseExperiment:
     def __init__(self):
+        self.observation = {}
+        self.observation_space = None
+        self.action = None
+        self.action_space = None
+
+        self.hero = None
+        self.spectator = None
+
+        self.spawn_point_list = []
+        self.vehicle_list = []
+
         self.experiment_config = EXPERIMENT_CONFIG
+        self.hero_model = ''.join(self.experiment_config["hero_vehicle_model"])
+
         self.set_observation_space()
         self.set_action_space()
 
@@ -98,18 +112,7 @@ class BaseExperiment:
         observation_space_option: Camera Image
         :return: observation space:
         """
-        image_space = Box(
-            low=-1.0,
-            high=1.0,
-            shape=(
-                self.experiment_config["SENSOR_CONFIG"]["CAMERA_X"],
-                self.experiment_config["SENSOR_CONFIG"]["CAMERA_Y"],
-                3 * self.experiment_config["SENSOR_CONFIG"]["FRAMESTACK"],
-            ),
-            dtype=np.float32,
-        )
-
-        self.observation_space = image_space
+        raise NotImplementedError
 
     def get_observation_space(self):
         """
@@ -198,8 +201,6 @@ class BaseExperiment:
 
         self.start_location = spawn_points[self.experiment_config["start_pos_spawn_id"]]
         self.end_location = spawn_points[self.experiment_config["end_pos_spawn_id"]]
-        self.spawn_point_list = []
-        self.vehicle_list = []
         # ToDO SA This function should be split into two functions. One function is specific to the experiment
         #  and another function should do the spawning, For example, Function one has a list of the hero spawns
         #  and second function two will do the spawning. The idea is that function one can be
@@ -225,45 +226,62 @@ class BaseExperiment:
         # self.hero.set_simulate_physics(False)
         # return self.hero
 
-    def get_server_view(self):
-        # spectator pointing to the sky to reduce rendering impact
-        server_view_x = (
-                self.experiment_config["Server_View"]["server_view_x_offset"]
-                + (self.start_location.location.x + self.end_location.location.x) / 2
+    def set_server_view(self,core):
+        """
+        Set server view to be behind the hero
+        :param core:Carla Core
+        :return:
+        """
+        # spectator following the car
+        transforms = self.hero.get_transform()
+        server_view_x = self.hero.get_location().x - 5 * transforms.get_forward_vector().x
+        server_view_y = self.hero.get_location().y - 5 * transforms.get_forward_vector().y
+        server_view_z = self.hero.get_location().z + 3
+        server_view_pitch = transforms.rotation.pitch
+        server_view_yaw = transforms.rotation.yaw
+        server_view_roll = transforms.rotation.roll
+        self.spectator = core.get_core_world().get_spectator()
+        self.spectator.set_transform(
+            carla.Transform(
+                carla.Location(x=server_view_x, y=server_view_y, z=server_view_z),
+                carla.Rotation(pitch=server_view_pitch,yaw=server_view_yaw,roll=server_view_roll),
+            )
         )
-        server_view_y = (
-                self.experiment_config["Server_View"]["server_view_y_offset"]
-                + (self.start_location.location.y + self.end_location.location.y) / 2
-        )
-        server_view_z = self.experiment_config["Server_View"]["server_view_height"]
-        server_view_pitch = self.experiment_config["Server_View"]["server_view_pitch"]
-        return server_view_x, server_view_y, server_view_z, server_view_pitch
+
 
     def get_done_status(self):
         done = self.observation["collision"]
         return done
 
-    def post_process_observation(self, core, observation):
+    def process_observation(self, core, observation):
+        """
+        Main function to do all the post processing of observations. This is an example.
+        :param core:
+        :param observation:
+        :return:
+        """
+        observation['camera'] = post_process_image(
+                                            observation['camera'],
+                                            normalized = self.experiment_config["SENSOR_CONFIG"]["CAMERA_NORMALIZED"],
+                                            grayscale = self.experiment_config["SENSOR_CONFIG"]["CAMERA_GRAYSCALE"]
+        )
         return observation
 
     def get_observation(self, core):
-        self.observation = {}
         info = {}
         if self.experiment_config["OBSERVATION_CONFIG"]["CAMERA_OBSERVATION"]:
-            self.observation["camera"] = core.get_camera_data(
-                self.experiment_config["SENSOR_CONFIG"]["CAMERA_NORMALIZED"]
-            )
+            self.observation["camera"] = core.get_camera_data()
         if self.experiment_config["OBSERVATION_CONFIG"]["COLLISION_OBSERVATION"]:
             self.observation["collision"] = core.get_collision_data()
         if self.experiment_config["OBSERVATION_CONFIG"]["LOCATION_OBSERVATION"]:
-            self.observation["location"] = core.hero.get_transform()
+            self.observation["location"] = self.hero.get_transform()
 
         info["control"] = {
-            "steer": self.control.steer,
-            "throttle": self.control.throttle,
-            "brake": self.control.brake,
-            "reverse": self.control.reverse,
-            "hand_brake": self.control.hand_brake,
+            "steer": self.action.steer,
+            "throttle": self.action.throttle,
+            "brake": self.action.brake,
+            "reverse": self.action.reverse,
+            "hand_brake": self.action.hand_brake,
         }
         return self.observation, info
 
@@ -278,22 +296,24 @@ class BaseExperiment:
         #  (like current action = previous action + extra). This is absolutely necessary for realism.
         #  (For example, command should be: Increase or decrease acceleration =>"throttle=Throttle+small_number
         if action is None:
-            self.control = carla.VehicleControl()
+            self.action = carla.VehicleControl()
         else:
             action = DISCRETE_ACTIONS[int(action)]
-            self.control.throttle = float(np.clip(action[0], 0, 1))
-            self.control.steer = float(np.clip(action[1], -0.7, 0.7))
-            self.control.brake = float(np.clip(action[2], 0, 1))
-            self.control.reverse = action[3]
-            self.control.hand_brake = action[4]
-            hero.apply_control(self.control)
+            self.action.throttle = float(np.clip(action[0], 0, 1))
+            self.action.steer = float(np.clip(action[1], -0.7, 0.7))
+            self.action.brake = float(np.clip(action[2], 0, 1))
+            self.action.reverse = action[3]
+            self.action.hand_brake = action[4]
+            hero.apply_control(self.action)
 
-    def compute_reward(self, observation):
+    def compute_reward(self, core, observation):
         """
-        Reward function
+
+        :param core:
         :param observation:
         :return:
         """
+
         return NotImplemented
 
     def initialize_reward(self, core):
@@ -306,8 +326,44 @@ class BaseExperiment:
         raise NotImplementedError
 
 
+    # ==============================================================================
+    # -- Hero -----------------------------------------------------------
+    # ==============================================================================
+    def spawn_hero(self, core, transform, autopilot=False):
+        """
+        This function spawns the hero vehicle. It makes sure that if a hero exists=>destroy the hero and respawn
 
+        :param transform: Hero location
+        :param vehicle_blueprint: Hero vehicle blueprint
+        :param world: World
+        :param autopilot: Autopilot Status
+        :return:
+        """
+        world = core.get_core_world()
 
+        if self.hero is not None:
+            self.hero.destroy()
+            self.hero = None
+
+        hero_car_blueprint = world.get_blueprint_library().find(self.hero_model)
+        hero_car_blueprint.set_attribute("role_name", "hero")
+
+        while self.hero is None:
+            self.hero = world.try_spawn_actor(hero_car_blueprint, transform)
+
+        self.hero.set_autopilot(autopilot)
+
+    def get_hero(self):
+
+        """
+        Get hero vehicle
+        :return:
+        """
+        return self.hero
+
+    # ==============================================================================
+    # -- Tick -----------------------------------------------------------
+    # ==============================================================================
 
     def experiment_tick(self, core, action):
         """
@@ -318,20 +374,9 @@ class BaseExperiment:
         """
 
         world = core.get_core_world()
-        # Breakpoints in this function can cause freezing because of timeout
         world.tick()
-        # If you don't wait for tick at all, your code will queue commands (not a good idea).
-        # For example, you will be still running controls with the code stopped
-        # try:
-        #     world.wait_for_tick(seconds=1.0)
-        # except:
-        #     print(
-        #         "Wait for tick failed, you might be too busy. Let us just re-tick and continue"
-        #     )
-        #     world.tick()
-        #     pass
         self.update_measurements(core)
-        self.update_actions(action, core.hero)
+        self.update_actions(action, self.hero)
 
         # self.getNearbyVehicles()
         # self.getNextWayPoint()
