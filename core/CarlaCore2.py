@@ -1,3 +1,7 @@
+"""
+This is a core that is used for the files under "Test_Code" folder. It just starts the server.
+"""
+
 from .BaseCarlaCore import BaseCarlaCore, CORE_CONFIG
 
 class CarlaCore(BaseCarlaCore):

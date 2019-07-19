@@ -5,6 +5,16 @@ import sys
 import cv2
 import numpy as np
 
+import collections
+
+def update_config(d, u):
+    for k, v in u.items():
+        if isinstance(v, collections.Mapping):
+            d[k] = update_config(d.get(k, {}), v)
+        else:
+            d[k] = v
+    return d
+
 def add_carla_path(carla_path_config_file):
     carla_text_path = (os.path.dirname(os.path.realpath(__file__)) + "/" + carla_path_config_file)
     carla_path_file = open(carla_text_path, "r")

@@ -27,13 +27,13 @@ class SensorsEnum(Enum):
     LIDAR = 6
 
 
-SERVER_VIEW_CONFIG = {
+BASE_SERVER_VIEW_CONFIG = {
     "server_view_x_offset": 00,
     "server_view_y_offset": 00,
     "server_view_height": 200,
     "server_view_pitch": -90,
 }
-SENSOR_CONFIG = {
+BASE_SENSOR_CONFIG = {
     "SENSOR": SensorsEnum.CAMERA_RGB,
     "SENSOR_TRANSFORM": SensorsTransformEnum.Transform_A,
     "CAMERA_X": 84,#1280,
@@ -43,14 +43,17 @@ SENSOR_CONFIG = {
     "CAMERA_GRAYSCALE": True,
     "FRAMESTACK": 1,
 }
-OBSERVATION_CONFIG = {
-    "CAMERA_OBSERVATION": True,
+BASE_OBSERVATION_CONFIG = {
+    "CAMERA_OBSERVATION": False,
     "COLLISION_OBSERVATION": True,
     "LOCATION_OBSERVATION": True,
 }
-EXPERIMENT_CONFIG = {
-    "server_map": "/Game/Carla/Maps/Town01",
-    "quality_level": "Low",  # options are low or High #ToDO change to enum
+BASE_EXPERIMENT_CONFIG = {
+    "OBSERVATION_CONFIG": BASE_OBSERVATION_CONFIG,
+    "Server_View": BASE_SERVER_VIEW_CONFIG,
+    "SENSOR_CONFIG": BASE_SENSOR_CONFIG,
+    "server_map": "Town02",
+    "quality_level": "Epic",  # options are low or Epic #ToDO. This does not do anything + change to enum
     "Disable_Rendering_Mode": False,  # If you disable, you will not get camera images
     "number_of_spawning_actors": 10,
     "start_pos_spawn_id": 100,  # 82,
@@ -58,11 +61,8 @@ EXPERIMENT_CONFIG = {
     "hero_vehicle_model": "vehicle.audi.tt",
     "fps": 30,
     "Weather": carla.WeatherParameters.ClearNoon,
-    "Server_View": SERVER_VIEW_CONFIG,
-    "SENSOR_CONFIG": SENSOR_CONFIG,
     "RANDOM_RESPAWN": False,  # Actors are randomly Respawned or Not
     "DISCRETE_ACTION": True,
-    "OBSERVATION_CONFIG": OBSERVATION_CONFIG,
 }
 
 DISCRETE_ACTIONS_SMALL = {
@@ -86,7 +86,8 @@ DISCRETE_ACTIONS = DISCRETE_ACTIONS_SMALL
 
 
 class BaseExperiment:
-    def __init__(self):
+    def __init__(self, config=BASE_EXPERIMENT_CONFIG):
+        self.experiment_config = config
         self.observation = {}
         self.observation_space = None
         self.action = None
@@ -98,7 +99,7 @@ class BaseExperiment:
         self.spawn_point_list = []
         self.vehicle_list = []
 
-        self.experiment_config = EXPERIMENT_CONFIG
+
         self.hero_model = ''.join(self.experiment_config["hero_vehicle_model"])
 
         self.set_observation_space()

@@ -57,6 +57,7 @@ class BaseCarlaCore:
             self.experiment_config["Disable_Rendering_Mode"],
             True,
             self.experiment_config["Weather"],
+            self.experiment_config["server_map"]
         )
         self.set_map_dimensions()
         self.camera_manager = None
@@ -101,7 +102,6 @@ class BaseCarlaCore:
         # Run the server process
         server_command = [
             self.environment_config["SERVER_BINARY"],
-            self.experiment_config["server_map"],
             "-windowed",
             "-ResX={}".format(self.experiment_config["SENSOR_CONFIG"]["CAMERA_X"]),
             "-ResY={}".format(self.experiment_config["SENSOR_CONFIG"]["CAMERA_Y"]),
@@ -130,7 +130,7 @@ class BaseCarlaCore:
     # ==============================================================================
 
     @staticmethod
-    def __connect_client(host, port, timeout, num_retries, disable_rendering_mode, sync_mode, weather):
+    def __connect_client(host, port, timeout, num_retries, disable_rendering_mode, sync_mode, weather,map):
         """
         Connect the client
 
@@ -141,12 +141,15 @@ class BaseCarlaCore:
         :param disable_rendering_mode: True to disable rendering
         :param sync_mode: True for RL
         :param weather: The weather to start the world
+        :param map: current map
         :return:
         """
         for i in range(num_retries):
             try:
                 carla_client = carla.Client(host, port)
                 carla_client.set_timeout(timeout)
+                carla_client.load_world(map)
+
                 world = carla_client.get_world()
 
                 settings = world.get_settings()
@@ -162,6 +165,7 @@ class BaseCarlaCore:
                 town_map = world.get_map()
                 actors = world.get_actors()
                 world.set_weather(weather)
+                print("Server setup is complete")
 
                 return carla_client, world, town_map, actors
 

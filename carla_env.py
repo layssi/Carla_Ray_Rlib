@@ -23,7 +23,7 @@ ENV_CONFIG.update({"SERVER_BINARY": CARLA_SERVER_BINARY})
 import carla
 
 #Choose your expreimet and Core
-from experiments.experiment2 import Experiment
+from experiments.experiment1 import Experiment
 from core.CarlaCore1 import CarlaCore
 
 from helper.CarlaDebug import draw_spawn_points, get_actor_display_name, \
@@ -52,7 +52,7 @@ class CarlaEnv(gym.Env):
 
     def reset(self):
         self.core.reset_sensors(self.experiment_config)
-        self.experiment.spawn_hero(self.core, self.experiment.start_location, autopilot=True)
+        self.experiment.spawn_hero(self.core, self.experiment.start_location, autopilot=False)
 
         self.core.setup_sensors(
             self.experiment.experiment_config,

@@ -1,26 +1,27 @@
-from experiments.base_experiment import BaseExperiment
-from helper.CarlaHelper import spawn_vehicle_at, post_process_image
+from experiments.base_experiment import *
+from helper.CarlaHelper import spawn_vehicle_at, post_process_image, update_config
 import random
 import numpy as np
 from gym.spaces import  Box
 from itertools import cycle
 
+SERVER_VIEW_CONFIG = {
+}
+
 SENSOR_CONFIG = {
     "CAMERA_NORMALIZED": True,
     "FRAMESTACK": 4,
 }
-
-
-
-OBSERVATION_CONFIG = {
+OBSERVATION_CONFIG ={
     "CAMERA_OBSERVATION": True,
-    "COLLISION_OBSERVATION": True,
-    "LOCATION_OBSERVATION": True,
 }
 
 EXPERIMENT_CONFIG = {
-    "number_of_spawning_actors": 5,
     "OBSERVATION_CONFIG": OBSERVATION_CONFIG,
+    "Server_View": SERVER_VIEW_CONFIG,
+    "SENSOR_CONFIG": SENSOR_CONFIG,
+    "number_of_spawning_actors": 10000,
+    "hero_vehicle_model": "vehicle.mini.cooperst",
 }
 
 ENV_CONFIG = {"RAY": True, "DEBUG_MODE": False}  # Are we running an experiment in Ray
@@ -28,12 +29,9 @@ ENV_CONFIG = {"RAY": True, "DEBUG_MODE": False}  # Are we running an experiment 
 
 class Experiment(BaseExperiment):
     def __init__(self):
-        super().__init__()
-        self.experiment_config.update(OBSERVATION_CONFIG)
-        self.experiment_config.update(EXPERIMENT_CONFIG)
+        config=update_config(BASE_EXPERIMENT_CONFIG, EXPERIMENT_CONFIG)
+        super().__init__(config)
 
-
-        self.hero_model = "vehicle.mini.cooperst"  # "vehicle.jeep.wrangler_rubicon"
 
         self.max_actors = 30
         self.randomized_vehicle_spawn_point = None

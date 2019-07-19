@@ -4,26 +4,33 @@ This module is how to setup a sample experiment.
 import numpy as np
 from gym.spaces import Box
 
-from experiments.base_experiment import BaseExperiment
+from experiments.base_experiment import *
+from helper.CarlaHelper import update_config
 import carla
 
-OBSERVATION_CONFIG = {
-    "CAMERA_OBSERVATION": True,
-    "COLLISION_OBSERVATION": True,
-    "LOCATION_OBSERVATION": True,
+SERVER_VIEW_CONFIG = {
+}
+
+SENSOR_CONFIG = {
+    "CAMERA_X": 1280,
+    "CAMERA_Y": 720,
+}
+OBSERVATION_CONFIG ={
+    "CAMERA_OBSERVATION": False,
 }
 
 EXPERIMENT_CONFIG = {
-    "number_of_spawning_actors": 10,
     "OBSERVATION_CONFIG": OBSERVATION_CONFIG,
+    "Server_View": SERVER_VIEW_CONFIG,
+    "SENSOR_CONFIG": SENSOR_CONFIG,
+    "number_of_spawning_actors": 0,
 }
 
 
 class Experiment(BaseExperiment):
     def __init__(self):
-        super().__init__()
-        self.experiment_config.update(EXPERIMENT_CONFIG)
-        self.experiment_config.update(OBSERVATION_CONFIG)
+        config=update_config(BASE_EXPERIMENT_CONFIG, EXPERIMENT_CONFIG)
+        super().__init__(config)
 
 
     def set_observation_space(self):
@@ -81,7 +88,7 @@ class Experiment(BaseExperiment):
         :param observation: CARLA observations
         :return:
         """
-        self.set_server_view(core)
+        #self.set_server_view(core)
 
         post_observation = np.r_[core.normalize_coordinates(
             observation["location"].location.x,
@@ -90,31 +97,31 @@ class Experiment(BaseExperiment):
 
 
 
-    # def set_server_view(self, core):
-    #
-    #     """
-    #     Apply server view to be in the sky between camera between start and end positions
-    #     :param core:
-    #     :return:
-    #     """
-    #     # spectator pointing to the sky to reduce rendering impact
-    #
-    #     server_view_x = (
-    #             self.experiment_config["Server_View"]["server_view_x_offset"]
-    #             + (self.start_location.location.x + self.end_location.location.x) / 2
-    #     )
-    #     server_view_y = (
-    #             self.experiment_config["Server_View"]["server_view_y_offset"]
-    #             + (self.start_location.location.y + self.end_location.location.y) / 2
-    #     )
-    #     server_view_z = self.experiment_config["Server_View"]["server_view_height"]
-    #     server_view_pitch = self.experiment_config["Server_View"]["server_view_pitch"]
-    #
-    #     world = core.get_core_world()
-    #     self.spectator = world.get_spectator()
-    #     self.spectator.set_transform(
-    #         carla.Transform(
-    #             carla.Location(x=server_view_x, y=server_view_y, z=server_view_z),
-    #             carla.Rotation(pitch=server_view_pitch),
-    #         )
-    #     )
+    def set_server_view(self, core):
+
+        """
+        Apply server view to be in the sky between camera between start and end positions
+        :param core:
+        :return:
+        """
+        # spectator pointing to the sky to reduce rendering impact
+
+        server_view_x = (
+                self.experiment_config["Server_View"]["server_view_x_offset"]
+                + (self.start_location.location.x + self.end_location.location.x) / 2
+        )
+        server_view_y = (
+                self.experiment_config["Server_View"]["server_view_y_offset"]
+                + (self.start_location.location.y + self.end_location.location.y) / 2
+        )
+        server_view_z = self.experiment_config["Server_View"]["server_view_height"]
+        server_view_pitch = self.experiment_config["Server_View"]["server_view_pitch"]
+
+        world = core.get_core_world()
+        self.spectator = world.get_spectator()
+        self.spectator.set_transform(
+            carla.Transform(
+                carla.Location(x=server_view_x, y=server_view_y, z=server_view_z),
+                carla.Rotation(pitch=server_view_pitch),
+            )
+        )
