@@ -10,7 +10,9 @@ def add_carla_path(carla_path_config_file):
     carla_path_file = open(carla_text_path, "r")
     carla_main_path = (carla_path_file.readline().split("\n"))[0]
     carla_path_file.close()
-    carla_egg_file = (carla_main_path + "/PythonAPI/carla/dist/carla-0.9.6-py3.5-linux-x86_64.egg")
+    for file in os.listdir(carla_main_path + "/PythonAPI/carla/dist/"):
+        if 'py3.5' in file:
+            carla_egg_file = os.path.join(carla_main_path + "/PythonAPI/carla/dist/", file)
     sys.path.append(os.path.expanduser(carla_egg_file))
     carla_python_interface = carla_main_path + "/PythonAPI/carla/"
     carla_server_binary = carla_main_path + "/CarlaUE4.sh"

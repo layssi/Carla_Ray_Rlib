@@ -49,14 +49,14 @@ OBSERVATION_CONFIG = {
     "LOCATION_OBSERVATION": True,
 }
 EXPERIMENT_CONFIG = {
-    "server_map": "/Game/Carla/Maps/Town02",
+    "server_map": "/Game/Carla/Maps/Town01",
     "quality_level": "Low",  # options are low or High #ToDO change to enum
     "Disable_Rendering_Mode": False,  # If you disable, you will not get camera images
     "number_of_spawning_actors": 10,
     "start_pos_spawn_id": 100,  # 82,
     "end_pos_spawn_id": 45,  # 34,
     "hero_vehicle_model": "vehicle.audi.tt",
-    "fps": 20,
+    "fps": 30,
     "Weather": carla.WeatherParameters.ClearNoon,
     "Server_View": SERVER_VIEW_CONFIG,
     "SENSOR_CONFIG": SENSOR_CONFIG,

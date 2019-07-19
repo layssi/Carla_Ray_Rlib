@@ -184,8 +184,6 @@ class Experiment(BaseExperiment):
                 v.destroy()
             self.vehicle_list = []
             self.spawn_point_list = []
-            # for v in world.get_actors().filter("vehicle.*"):
-            #    v.destroy()
 
         # print(world.get_actors().filter("vehicle.*"))
         print('number of actors: ', len(self.vehicle_list))
