@@ -38,7 +38,7 @@ class Experiment(BaseExperiment):
         Set observation space as location of vehicle im x,y starting at (0,0) and ending at (1,1)
         :return:
         """
-        self.observation_space = Box(low=0.0, high=1.0, shape=(2,), dtype=np.float32)
+        self.observation_space = Box(low=np.array([0, 0,-1.0]), high=np.array([1.0, 1.0,1.0]), dtype=np.float32)
 
     def initialize_reward(self, core):
         """
@@ -92,7 +92,8 @@ class Experiment(BaseExperiment):
 
         post_observation = np.r_[core.normalize_coordinates(
             observation["location"].location.x,
-            observation["location"].location.y)]
+            observation["location"].location.y),
+            np.sin(observation['location'].rotation.yaw * np.pi / 180)]
         return post_observation
 
 

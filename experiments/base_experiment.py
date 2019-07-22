@@ -98,6 +98,9 @@ class BaseExperiment:
 
         self.spawn_point_list = []
         self.vehicle_list = []
+        self.start_location = None
+        self.end_location = None
+
 
 
         self.hero_model = ''.join(self.experiment_config["hero_vehicle_model"])
