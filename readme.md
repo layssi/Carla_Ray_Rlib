@@ -28,7 +28,7 @@ To prevent the freezing of the mouse (which is very annoying).Under your Carla/C
 # Setup Environment
 ## Install Environment
 Download and install conda: https://www.anaconda.com/distribution/  
-conda env create --name [**enviroment-name**] -f=requirements.txt   
+conda env create --name [**enviroment-name**] -f=requirements.yml   
 conda activate [**enviroment-name**]  
 Conda might ask you to do "conda init bash"  
 conda install -c anaconda tensorflow-gpu  
