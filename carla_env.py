@@ -24,7 +24,7 @@ ENV_CONFIG.update({"SERVER_BINARY": CARLA_SERVER_BINARY})
 import carla
 
 #Choose your expreimet and Core
-from experiments.experiment1 import Experiment
+from experiments.experiment3 import Experiment
 from core.CarlaCore1 import CarlaCore
 
 from helper.CarlaDebug import draw_spawn_points, get_actor_display_name, \

@@ -53,7 +53,7 @@ BASE_EXPERIMENT_CONFIG = {
     "Server_View": BASE_SERVER_VIEW_CONFIG,
     "SENSOR_CONFIG": BASE_SENSOR_CONFIG,
     "server_map": "Town02",
-    "quality_level": "Epic",  # options are low or Epic #ToDO. This does not do anything + change to enum
+    "quality_level": "Low",  # options are low or Epic #ToDO. This does not do anything + change to enum
     "Disable_Rendering_Mode": False,  # If you disable, you will not get camera images
     "number_of_spawning_actors": 10,
     "start_pos_spawn_id": 100,  # 82,
