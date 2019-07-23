@@ -63,6 +63,7 @@ BASE_EXPERIMENT_CONFIG = {
     "Weather": carla.WeatherParameters.ClearNoon,
     "RANDOM_RESPAWN": False,  # Actors are randomly Respawned or Not
     "DISCRETE_ACTION": True,
+    "Debug": False,
 }
 
 DISCRETE_ACTIONS_SMALL = {
@@ -80,7 +81,6 @@ DISCRETE_ACTIONS_SMALL = {
     11: [0.0, -0.23, 0.0, False, False],  # Left+Stop
     12: [0.0, 0.23, 0.0, False, False],  # Right+Stop
     13: [0.0, 0.70, 0.0, False, False],  # Right+Stop
-    14: [0.5, -0.75, 0.0, False, False],  # ToDO Test Right+Stop
 }
 DISCRETE_ACTIONS = DISCRETE_ACTIONS_SMALL
 

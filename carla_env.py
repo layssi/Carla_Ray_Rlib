@@ -10,6 +10,7 @@ import time
 import gym
 from gym.utils import seeding
 from helper.CarlaHelper import add_carla_path
+from random import randint
 
 ENV_CONFIG = {
     "RAY": True,  # True if you are  running an experiment in Ray
@@ -123,10 +124,9 @@ if __name__ == "__main__":
             done = False
             while done is False:
                 t = time.time()
-                observation, reward, done, info = env.step(1)  # Forward
-                # obs, reward, done, info = env2.step(2)  # Forward
+                observation, reward, done, info = env.step(1)  #Forward
+                #observation, reward, done, info = env.step(randint(0,(env.action_space.n-1)))  #Random
                 # print ("observation:",observation," Reward::{:0.2f}".format(reward * 1000))
-
                 elapsed = time.time() - t
             # print("Elapsed (ms):{:0.2f}".format(elapsed * 1000))
 

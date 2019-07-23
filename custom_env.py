@@ -62,16 +62,18 @@ if __name__ == "__main__":
     ray.init()
     ModelCatalog.register_custom_model("my_model", CustomModel)
     tune.run(
-    "PPO",
+    "A3C", #"PPO"
     stop={"timesteps_total": 1000000},
+    checkpoint_freq=1,
     config={
         "env": CarlaEnv,  # CarlaEnv,SimpleCorridor,  # or "corridor" if registered above
         "model": {"custom_model": "my_model"},
-        "lr": 1e-2,  # grid_search([1e-2, 1e-4, 1e-6]),  # try different lrs
-        "num_workers": 1,  # parallelism
+#        "lr": 1e-2,  # grid_search([1e-2, 1e-4, 1e-6]),  # try different lrs
+        "num_workers": 4,  # parallelism
         "num_gpus_per_worker": 0.2,
         "env_config": env_config,
     },
+        resume=False,
     )
 #    except:
 #        kill_server()

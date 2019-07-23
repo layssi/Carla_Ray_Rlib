@@ -24,7 +24,23 @@ EXPERIMENT_CONFIG = {
     "Server_View": SERVER_VIEW_CONFIG,
     "SENSOR_CONFIG": SENSOR_CONFIG,
     "number_of_spawning_actors": 0,
+    "Debug": False,
 }
+
+
+def calculate_forward_speed(vehicle):
+    # https://github.com/carla-simulator/carla/issues/355
+    yaw_global = np.radians(vehicle.get_transform().rotation.yaw)
+
+    rotation_global = np.array([
+        [np.sin(yaw_global), np.cos(yaw_global)],
+        [np.cos(yaw_global), -np.sin(yaw_global)]
+    ])
+
+    velocity_global = vehicle.get_velocity()
+    velocity_global = np.array([velocity_global.y, velocity_global.x])
+    velocity_local = rotation_global.T @ velocity_global
+    return (velocity_local[0])
 
 
 class Experiment(BaseExperiment):
@@ -38,7 +54,7 @@ class Experiment(BaseExperiment):
         Set observation space as location of vehicle im x,y starting at (0,0) and ending at (1,1)
         :return:
         """
-        self.observation_space = Box(low=np.array([0, 0,-1.0]), high=np.array([1.0, 1.0,1.0]), dtype=np.float32)
+        self.observation_space = Box(low=np.array([0, 0,-1.0,0]), high=np.array([1.0, 1.0,1.0,1.0]), dtype=np.float32)
 
     def initialize_reward(self, core):
         """
@@ -90,10 +106,38 @@ class Experiment(BaseExperiment):
         """
         #self.set_server_view(core)
 
-        post_observation = np.r_[core.normalize_coordinates(
-            observation["location"].location.x,
-            observation["location"].location.y),
-            np.sin(observation['location'].rotation.yaw * np.pi / 180)]
+        x_pos, y_pos= core.normalize_coordinates(observation["location"].location.x,
+                                                 observation["location"].location.y)
+        forward_velocity = np.clip(calculate_forward_speed(self.hero), 0, None)
+        forward_velocity=np.clip(forward_velocity, 0, 50.0)/50
+        heading = np.sin(observation['location'].rotation.yaw * np.pi / 180)
+
+        post_observation = np.r_[x_pos, y_pos, heading, forward_velocity]
+        if self.experiment_config["Debug"]:
+            normalized_x = post_observation[0]
+            normalized_y = post_observation[1]
+            distance_reward = float(
+                np.linalg.norm(
+                    [
+                        normalized_x - self.start_pos_normalized_x,
+                        normalized_y - self.start_pos_normalized_y,
+                    ])
+            )
+
+
+            message = "Vehicle at ({pos_x:.2f}, {pos_y:.2f}), "
+            message += "with speed {speed:.2f} km/h, and heading {heading:.2f}  "
+            message += " and reward is {reward:.2f}"
+
+            message = message.format(
+                pos_x = x_pos,
+                pos_y = y_pos,
+                speed = forward_velocity,
+                heading = heading,
+                reward = distance_reward,
+            )
+            print(message)
+
         return post_observation
 
 
