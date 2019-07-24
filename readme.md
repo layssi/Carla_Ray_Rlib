@@ -39,3 +39,8 @@ In "helper" folder, change the location of your Carla path in file "CARLA_PATH.t
 Start a pycharm project and choose the anaconda envirometn create [**enviroment-name**] 
 
 
+
+# Cloud Setup
+There is an ami available on ec2 with everything setup and no display.  
+Just find "ami-070f500a304414585" and start the machine.  
+Run "source ~/.bashrc" and run "python3 carla_env.py" or "python3 vision_algorithm.py"  
