@@ -123,6 +123,7 @@ class Experiment(BaseExperiment):
     def compute_reward(self, core, observation):
         """
         Reward function
+        :param core:
         :param observation:
         :return:
         """

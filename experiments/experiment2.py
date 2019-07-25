@@ -95,7 +95,7 @@ class Experiment(BaseExperiment):
             self.prev_image_0 = image
             self.prev_image_1 = self.prev_image_0
             self.prev_image_2 = self.prev_image_1
-        #ToDO Hamid. Fix the images stack
+        #ToDO. Fix the images stack
         if self.frame_stack >= 2:
             images = np.concatenate([self.prev_image_0, image], axis=2)
         if self.frame_stack >= 3 and images is not None:
@@ -121,6 +121,7 @@ class Experiment(BaseExperiment):
         """
         Reward function
         :param observation:
+        :param core:
         :return:
         """
         c = float(np.sqrt(np.square(self.hero.get_location().x - self.base_x) + \

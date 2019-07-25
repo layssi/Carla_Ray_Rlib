@@ -4,6 +4,8 @@ import time
 import sys
 import cv2
 import numpy as np
+from helper.list_procs import search_procs_by_name
+import signal
 
 import collections
 
@@ -40,6 +42,7 @@ def post_process_image(image, normalized=True, grayscale=True):
     Convert image to gray scale and normalize between -1 and 1 if required
     :param image:
     :param normalized:
+    :param grayscale
     :return: normalized image
     """
     if grayscale:
@@ -51,6 +54,13 @@ def post_process_image(image, normalized=True, grayscale=True):
         return image.astype(np.float32)
 
 
+def kill_server():
+    """
+    Kill all PIDs that start with Carla. Do this if you running a single server
+    :return:
+    """
+    for pid, name in search_procs_by_name("Carla").items():
+        os.kill(pid, signal.SIGKILL)
 
 def spawn_vehicle_at(transform, vehicle_blueprint, world, autopilot=True, max_time=0.1):
     """

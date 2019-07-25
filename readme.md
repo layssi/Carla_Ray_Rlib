@@ -39,8 +39,21 @@ In "helper" folder, change the location of your Carla path in file "CARLA_PATH.t
 Start a pycharm project and choose the anaconda envirometn create [**enviroment-name**] 
 
 
+# Project Organization
+Algorithms: Allow you to setup different RL algorithms and models
+Core: Has Base Carla Functionality and can be extended or modified
+experiments: Allows you to setup your experiment. Example, observations and rewards
+helper: Help functions that are used used by multiple modules 
+Test_code: Couple Carla script to allow you to run and test the core
 
 # Cloud Setup
 There is an ami available on ec2 with everything setup and no display.  
-Just find "ami-070f500a304414585" and start the machine.  
+Find "ami-070f500a304414585" and start the machine.  
+Make sure your security setting have the inbound and outbound ports open.  
+Update the code to the latest.  
 Run "source ~/.bashrc" and run "python3 carla_env.py" or "python3 vision_algorithm.py"  
+
+# ToDO
+1. Setup the AMI to properly run RLIB on the cloud with autoscales
+2. Verify experiment 1 and experiment 2 and verify apex_vision and ppo_custom
+3. Add rollout to export and test inference

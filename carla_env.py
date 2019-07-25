@@ -15,7 +15,8 @@ from random import randint
 ENV_CONFIG = {
     "RAY": True,  # True if you are  running an experiment in Ray
     "DEBUG_MODE": False,
-    "CARLA_PATH_CONFIG_FILE": "CARLA_PATH.txt",  # IN this file, put the path to your CARLA FOLDER
+    "CARLA_PATH_CONFIG_FILE": "CARLA_PATH.txt",  # Do not modify for individual experiments
+    "Experiment":"experiment1",
 }
 
 CARLA_SERVER_BINARY = add_carla_path(ENV_CONFIG["CARLA_PATH_CONFIG_FILE"])
@@ -23,12 +24,13 @@ ENV_CONFIG.update({"SERVER_BINARY": CARLA_SERVER_BINARY})
 
 import carla
 
-#Choose your expreimet and Core
-from experiments.experiment3 import Experiment
+#Choose your experiment and Core
+#from experiments.experiment3 import Experiment
 from core.CarlaCore1 import CarlaCore
 
 from helper.CarlaDebug import draw_spawn_points, get_actor_display_name, \
     split_actors, get_actor_status, print_spawn_point
+from helper.CarlaHelper import kill_server
 
 
 class CarlaEnv(gym.Env):
@@ -38,10 +40,8 @@ class CarlaEnv(gym.Env):
         self.environment_config = config
         carla_server_binary = add_carla_path(ENV_CONFIG["CARLA_PATH_CONFIG_FILE"])
         self.environment_config.update({"SERVER_BINARY": carla_server_binary})
-
-        self.seed()
-
-        self.experiment = Experiment()
+        module = __import__("experiments.{}".format(self.environment_config["Experiment"] ))
+        exec("self.experiment = module.{}.Experiment()".format(self.environment_config["Experiment"]))
         self.action_space = self.experiment.get_action_space()
         self.observation_space = self.experiment.get_observation_space()
         self.experiment_config = self.experiment.get_experiment_config()
@@ -128,7 +128,7 @@ if __name__ == "__main__":
                 #observation, reward, done, info = env.step(randint(0,(env.action_space.n-1)))  #Random
                 # print ("observation:",observation," Reward::{:0.2f}".format(reward * 1000))
                 elapsed = time.time() - t
-            # print("Elapsed (ms):{:0.2f}".format(elapsed * 1000))
+                print("Elapsed (ms):{:0.2f}".format(elapsed * 1000))
 
     except (KeyboardInterrupt, SystemExit):
-        env.core.kill_server()
+        kill_server()

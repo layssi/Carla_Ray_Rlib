@@ -13,6 +13,7 @@ from helper.CarlaDebug import get_actor_display_name
 from helper.CollisionManager import CollisionManager
 from helper.list_procs import search_procs_by_name
 
+
 """
 Generic Carla colors (Not being used but can be useful)
 """
@@ -317,11 +318,6 @@ class BaseCarlaCore:
 
     def get_core_world(self):
         return self.world
-
-    def kill_server(self):
-        # Kill all PIDs that start with Carla. Do this if you running a single server
-        for pid, name in search_procs_by_name("Carla").items():
-            os.kill(pid, signal.SIGKILL)
 
     def get_nearby_vehicles(self, world, hero_actor, max_distance=200):
         vehicles = world.get_actors().filter("vehicle.*")

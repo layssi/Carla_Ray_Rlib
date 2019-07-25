@@ -140,7 +140,7 @@ class BaseExperiment:
 
         random_respawn = self.experiment_config["RANDOM_RESPAWN"]
 
-        # Get all spwan Points
+        # Get all spawn Points
         spawn_points = list(world.get_map().get_spawn_points())
 
         randomized_vehicle_spawn_point = spawn_points.copy()
@@ -336,10 +336,8 @@ class BaseExperiment:
     def spawn_hero(self, core, transform, autopilot=False):
         """
         This function spawns the hero vehicle. It makes sure that if a hero exists=>destroy the hero and respawn
-
+        :param core
         :param transform: Hero location
-        :param vehicle_blueprint: Hero vehicle blueprint
-        :param world: World
         :param autopilot: Autopilot Status
         :return:
         """
