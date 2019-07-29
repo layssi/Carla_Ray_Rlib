@@ -35,9 +35,12 @@ conda install -c anaconda tensorflow-gpu
 
 ## Update Carla path
 In "helper" folder, change the location of your Carla path in file "CARLA_PATH.txt".  Example: ~/home/Carla_Simulator
-## (optional) Pycharm setup
-Start a pycharm project and choose the anaconda envirometn create [**enviroment-name**] 
-
+## Pycharm setup
+Start a new pycharm project. 
+Point the project to this directory.
+Choose an existing anaconda enviroment. Pick the enviroment created in [**enviroment-name**]
+It will look like "/anaconda/env/[**enviroment-name**]/bin/python
+Open the folder and run "carla_env.py". Also run "a3c_vision.py"
 
 # Project Organization
 Algorithms: Allow you to setup different RL algorithms and models
