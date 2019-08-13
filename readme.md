@@ -23,7 +23,7 @@ Under your Carla/CARLAUE4/Config, edit *DefaultEngine.ini*:
 To prevent the freezing of the mouse (which is very annoying).Under your Carla/CARLAUE4/Config, edit *"DefaultInput.ini"*:  
 **bCaptureMouseOnLaunch=False**  
 **DefaultViewportMouseCaptureMode=CaptureDuringMouseDown**  
-**bDefaultViewportMouseLock=DoNotLock**  
+**bDefaultViewportMouseLock=False**  
 **DefaultViewportMouseLockMode=DoNotLock**  
 
 # Setup Environment
